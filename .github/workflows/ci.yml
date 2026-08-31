@@ -39,8 +39,17 @@ jobs:
           # State section records. If the flake's pin moves, move this with it.
           node-version: 24
 
-      - name: install
-        run: npm ci || npm install
+      # npm 11 exits 254 on a missing package.json for BOTH ci and install,
+      # so a bare `npm ci || npm install` red-flagged the whole job on a repo
+      # mid-scaffold (2026-08-31, the bootstrap PR) -- as the first step it
+      # never let the skip-with-warning steps below run. Gated like they are.
+      - name: install (if wired up)
+        run: |
+          if [ -f package.json ]; then
+            npm ci || npm install
+          else
+            echo "::warning::no package.json -- install skipped"
+          fi
 
       - name: typecheck (if wired up)
         run: |
