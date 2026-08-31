@@ -172,6 +172,8 @@ the current docs rather than recalling them — third-party APIs drift.
   is**: a change that makes it stale corrects it in the same change, not as a
   follow-up. The `docs-sync` skill is the checklist for that.
 - `docs/` — if and when deeper notes exist. Same discipline.
+- `wiki/` — narrative articles (repo history, how-tos), e.g.
+  `wiki/repo-init.md`. Same discipline.
 
 ## Skills
 
