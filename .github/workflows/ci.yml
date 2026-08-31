@@ -1,0 +1,67 @@
+name: ci
+
+# Mirrors the ship skill's step 0 (preflight: typecheck + lint + test)
+# exactly rather than inventing separate CI-only logic -- what runs here is
+# what any session already runs by hand before opening a PR, just automated
+# instead of relying on that being remembered every time.
+#
+# This is the backstop for the local pre-commit hook (.githooks/pre-commit,
+# wired in via `git config core.hooksPath .githooks`) rather than a
+# redundant re-check: the hook is opt-in per clone and skips itself
+# silently when the tools aren't wired up, so this is what actually blocks
+# a regression on a contributor who never installed the hooks.
+#
+# Scripts that don't exist yet are skipped with a visible note rather than
+# failed: a repo mid-scaffold can't check what it hasn't wired up. A green
+# run that skipped a check says so in the log -- read it, don't just read
+# the checkmark.
+#
+# Assumes npm. If the repo adopts pnpm/yarn/bun (the thing AGENTS.md's
+# State section records as its FILL IN), adjust install + run to match --
+# including the setup action the chosen manager needs.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    name: typecheck + lint + test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Matches nodejs_24 in flake.nix -- the toolchain decision AGENTS.md's
+          # State section records. If the flake's pin moves, move this with it.
+          node-version: 24
+
+      - name: install
+        run: npm ci || npm install
+
+      - name: typecheck (if wired up)
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.typecheck ? 0 : 1)" 2>/dev/null; then
+            npm run typecheck
+          else
+            echo "::warning::no 'typecheck' script in package.json -- skipped"
+          fi
+
+      - name: lint (if wired up)
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.lint ? 0 : 1)" 2>/dev/null; then
+            npm run lint
+          else
+            echo "::warning::no 'lint' script in package.json -- skipped"
+          fi
+
+      - name: test (if wired up)
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.test ? 0 : 1)" 2>/dev/null; then
+            npm run test --if-present
+          else
+            echo "::warning::no 'test' script in package.json -- skipped"
+          fi

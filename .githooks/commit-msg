@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Enforces AGENTS.md's commit-trailer convention: "Co-Authored-By: Claude",
+# with no model name and no email. Auto-corrects rather than rejecting,
+# because the thing going wrong here isn't a choice an author could have
+# caught by re-reading the message -- AGENTS.md's trailer section explains
+# it: the model name is copied from whatever the system prompt says, and
+# "an agent cannot verify which model is executing it." The original repo's
+# log accumulated 82 wrong "Sonnet 5" trailers and 54 wrong "Opus 5" ones
+# from exactly this, written by an agent with no way to know it was wrong.
+# A hook that silently fixes the line prevents that without asking anyone
+# to remember a rule that isn't independently checkable at write time.
+#
+# This only touches trailers naming Claude -- the convention's exemplar.
+# Any other agent's trailer (same shape, its own name, no model, no email)
+# passes through untouched; AGENTS.md's rule is that such trailers must be
+# formed correctly at write time, because no hook can guess what agent
+# wrote a given commit.
+#
+# Existing commits keep their (wrong) labels per AGENTS.md -- this only
+# touches the message being written right now.
+set -euo pipefail
+msg_file="$1"
+
+canonical="Co-Authored-By: Claude"
+# Matches the trailer whether or not a model name and/or an email got
+# appended: "Claude", "Claude Opus 5 <noreply@anthropic.com>",
+# "Claude Sonnet 5", "Claude <claude@anthropic.com>", etc. -- all correct
+# down to the bare canonical form.
+pattern='^Co-Authored-By:[[:space:]]+Claude([[:space:]]+[^<]*)?([[:space:]]*<[^>]*>)?[[:space:]]*$'
+
+if grep -qE "$pattern" "$msg_file" && ! grep -qxF "$canonical" "$msg_file"; then
+    # Temp file + mv instead of sed -i: BSD sed's "-i -E" eats "-E" as the
+    # backup suffix, and this hook should stay portable across dev hosts.
+    tmp=$(mktemp "${msg_file}.XXXXXX")
+    sed -E "s/${pattern}/${canonical}/" "$msg_file" > "$tmp"
+    mv "$tmp" "$msg_file"
+    echo "commit-msg: corrected the Co-Authored-By trailer to the canonical form (agent name only -- no model name, no email)" >&2
+fi

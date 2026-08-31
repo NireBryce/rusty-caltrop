@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Fast local gate before every commit: typecheck + lint if the repo has
+# them wired up. Not active by default -- `git config core.hooksPath
+# .githooks` has to point git at this directory first; a fresh clone still
+# relies on CI (.github/workflows/ci.yml) until that's run once, same as
+# any opt-in hook.
+#
+# Deliberately does NOT run the test suite: tests can be slow, and CI runs
+# them on every PR anyway. This hook is for the fast feedback a committer
+# wants in the second before a commit lands, not a substitute for
+# preflight. Run `<pm> run preflight` (the ship skill's step 0) for the
+# full check.
+#
+# Skips itself with a visible note when there's nothing to run: no
+# package.json, no scripts defined, or no package manager on PATH. A repo
+# mid-scaffold has nothing to check, and a hook that fails there just
+# trains people to bypass hooks. Script detection uses jq (not node) so
+# the skip decision itself doesn't depend on a JS runtime being installed.
+set -euo pipefail
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+[ -f package.json ] || exit 0
+
+# Pick the package manager from the lockfile, npm as the fallback.
+pm="npm"
+[ -f pnpm-lock.yaml ] && pm="pnpm"
+[ -f yarn.lock ] && pm="yarn"
+[ -f bun.lockb ] && pm="bun"
+
+if ! command -v "$pm" >/dev/null 2>&1; then
+    echo "pre-commit: '$pm' not on PATH -- skipping the checks." >&2
+    echo "  (CI still runs typecheck + lint + test on the PR; this hook is" >&2
+    echo "  the early-warning layer, not the enforcement layer)" >&2
+    exit 0
+fi
+
+run_if_defined() {
+    local script="$1"
+    if jq -e --arg s "$script" '.scripts[$s] != null' package.json >/dev/null 2>&1; then
+        echo "pre-commit: running '$script'..." >&2
+        if ! "$pm" run "$script"; then
+            echo >&2
+            echo "pre-commit: '$script' failed above -- fix it, or re-run to see it again without committing." >&2
+            echo "  --no-verify bypasses this hook if you really need to; CI still runs the same checks on the PR either way." >&2
+            exit 1
+        fi
+    else
+        echo "pre-commit: no '$script' script in package.json -- skipping that check." >&2
+        echo "  (if the tooling exists but isn't wired up, that's a gap worth closing, not a pass)" >&2
+    fi
+}
+
+run_if_defined typecheck
+run_if_defined lint
+
+exit 0
