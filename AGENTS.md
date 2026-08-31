@@ -21,10 +21,12 @@ check `git branch --show-current`.
 
 ## State
 
-Empty repo: no commits, no `package.json`, no source yet. Every claim below
-with a **FILL IN** marker is a fact to establish the moment it exists, not a
-placeholder to leave in place. Update this section in the same change that
-changes the fact — an agent's notes that lag the tree are worse than none.
+Scaffolded, no source yet: commits exist (`main` pushed), and the agent
+scaffolding plus the Nix flake dev shell are landed — but no `package.json`
+and no source. Every claim below with a **FILL IN** marker is a
+fact to establish the moment it exists, not a placeholder to leave in
+place. Update this section in the same change that changes the fact — an
+agent's notes that lag the tree are worse than none.
 
 - Package manager: **npm**. Toolchain: **Node 24** (`nodejs_24`), provided by
   the Nix flake dev shell (`nix develop` or direnv `.envrc`); version pinned
@@ -61,10 +63,16 @@ tests live, what the module boundaries are. Until then, assume nothing —
 
 ## Traps
 
-None yet — this repo hasn't been worked in. Traps get added here as they
-actually happen, each with its mechanism, not as a precautionary list of
-things that might. The inherited ones worth carrying over before any local
-incident exists:
+### A predicted-green is not a checked-green (2026-08-31)
+
+The bootstrap PR's body predicted "green with skip warnings" and asked to
+merge without reading the runs; both were red within 9 seconds. Mechanism:
+the install step assumed empty-dir `npm install` exits 0 — true on old npm,
+false on npm 11 (exit 254, ENOENT on the missing package.json). Two rules
+fall out: CI on this repo completes in seconds, so `gh run list` is part of
+the merge preview, not a follow-up; and any step's tolerance for a missing
+package.json is unverified until run against the npm version CI actually
+uses.
 
 ### Typecheck passing proves typecheck passing
 
