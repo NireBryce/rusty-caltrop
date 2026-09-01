@@ -34,6 +34,9 @@ In the order they landed:
 - [Wiki style guide](styleguide.md) — this wiki's own house style: naming,
   the per-page Contents block and how `npm run wiki-lint` keeps it and
   every link honest, and content shape.
+- [Work in progress](work-in-progress.md) — the one page that isn't a
+  finished narrative: a running list of hanging threads noticed mid-work,
+  kept current by the `work-in-progress` skill.
 
 ## Keeping this from rotting
 

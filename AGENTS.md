@@ -246,7 +246,10 @@ the current docs rather than recalling them — third-party APIs drift.
   `wiki/styleguide.md`. Same discipline, including keeping that index and
   each page's "See also" links and `## Contents` block current when a
   page moves, a heading changes, or a new page lands — `npm run wiki-lint`
-  catches the mechanical half of that.
+  catches the mechanical half of that. One page in there isn't a finished
+  narrative: `wiki/work-in-progress.md` tracks hanging threads while
+  they're still open, kept current by the `work-in-progress` skill rather
+  than by this same-change rule.
 
 ## Skills
 
@@ -257,6 +260,7 @@ the current docs rather than recalling them — third-party APIs drift.
 | `propose-issue` | proposing a GitHub issue for a defect noticed along the way |
 | `secrets-hygiene` | not leaking `.env` values and tokens into the transcript |
 | `docs-sync` | keeping README/docs true after a change |
+| `work-in-progress` | tracking a hanging thread on `wiki/work-in-progress.md` until it resolves |
 | `prune-permissions` | pruning dead entries from `.claude/settings.local.json` |
 | `new-skill` | writing a new skill in this repo |
 

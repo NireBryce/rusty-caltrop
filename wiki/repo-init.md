@@ -90,3 +90,6 @@ this article stays a record of the init.
   fans out into.
 - AGENTS.md's Traps section — the CI-install trap from step 3 above, in
   its permanent home.
+- [Work in progress](work-in-progress.md) — README's Development section
+  not carrying forward the "Fresh clone setup" hooks step above is an
+  open thread there.

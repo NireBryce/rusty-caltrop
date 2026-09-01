@@ -108,3 +108,5 @@ right every time (AGENTS.md, Traps).
 - [Wiki index](README.md)
 - [repo-init.md](repo-init.md) — the landing this module shipped with,
   and the toolchain (`npm run test` etc.) it's checked by.
+- [Work in progress](work-in-progress.md) — `startRafLoop` has never run
+  in a real browser; tracked there rather than claimed done here.
