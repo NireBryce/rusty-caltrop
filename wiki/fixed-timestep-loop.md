@@ -1,5 +1,14 @@
 # The fixed-timestep loop
 
+## Contents
+
+- [The problem it solves](#the-problem-it-solves)
+- [The mechanism](#the-mechanism)
+- [The clamp, and reset](#the-clamp-and-reset)
+- [Driving it](#driving-it)
+- [Testing](#testing)
+- [See also](#see-also)
+
 `src/loop.ts` is the engine's first module: a loop that keeps simulation
 time separate from render time. This article is the narrative version of
 its module doc — the why, a worked timeline, and how to drive it. The
@@ -93,3 +102,9 @@ accumulator arithmetic, the clamp (a 100 s gap yields exactly
 new expectations, recompute the accumulator math by hand first — the
 first test run here failed on wrong expected values while the loop was
 right every time (AGENTS.md, Traps).
+
+## See also
+
+- [Wiki index](README.md)
+- [repo-init.md](repo-init.md) — the landing this module shipped with,
+  and the toolchain (`npm run test` etc.) it's checked by.

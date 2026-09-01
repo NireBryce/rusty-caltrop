@@ -1,5 +1,13 @@
 # The lint ratchet: `eslint` (strict) + `knip` + oversized files
 
+## Contents
+
+- [Origin](#origin)
+- [The three checks](#the-three-checks)
+- [The judgement calls](#the-judgement-calls)
+- [Future](#future)
+- [See also](#see-also)
+
 Where `npm run lint`'s three checks came from, and why they're ratcheted
 against a baseline instead of just required to pass — 2026-08-31.
 
@@ -79,3 +87,11 @@ that command is for a knowing decision to accept a batch of findings, not a
 way to get a red `lint` to pass. `node scripts/lint-ratchet.mjs show` lists
 current findings without touching the baseline, for checking what's
 actually flagged before deciding whether it's worth fixing now.
+
+## See also
+
+- [Wiki index](README.md)
+- [dep-currency.md](dep-currency.md) — the sibling preflight check, same
+  "exception is code, with a reason" convention.
+- [repo-init.md](repo-init.md) — the landing that gave `eslint.config.js`
+  its first, pre-ratchet form.

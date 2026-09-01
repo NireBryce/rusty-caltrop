@@ -13,6 +13,7 @@
     "test": "vitest run",
     "build": "tsc -p tsconfig.build.json",
     "check-deps": "node scripts/check-dep-versions.mjs",
+    "wiki-lint": "node scripts/check-wiki.mjs check",
     "preflight": "npm run typecheck && npm run lint && npm run test && npm run check-deps"
   },
   "devDependencies": {

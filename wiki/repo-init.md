@@ -1,5 +1,13 @@
 # Repo init
 
+## Contents
+
+- [The order of events](#the-order-of-events)
+- [Decisions worth keeping](#decisions-worth-keeping)
+- [Fresh clone setup](#fresh-clone-setup)
+- [Since then](#since-then)
+- [See also](#see-also)
+
 How this repo went from an empty GitHub project to a working scaffold,
 on 2026-08-31. The short version: one deliberate exception to the PR
 flow (an empty first commit), then everything real through PRs —
@@ -72,5 +80,13 @@ plus `check-deps`, the engine's first source — `src/loop.ts`, the
 fixed-timestep loop — with co-located tests, and a README. See
 [fixed-timestep-loop.md](fixed-timestep-loop.md) for the loop's
 mechanism and [dep-currency.md](dep-currency.md) for why the dependency
-audit exists. AGENTS.md's State section tracks current facts; this
-article stays a record of the init.
+audit exists. A day later, [lint-ratchet.md](lint-ratchet.md) covers the
+fifth preflight check. AGENTS.md's State section tracks current facts;
+this article stays a record of the init.
+
+## See also
+
+- [Wiki index](README.md) — the other articles this repo's early history
+  fans out into.
+- AGENTS.md's Traps section — the CI-install trap from step 3 above, in
+  its permanent home.
