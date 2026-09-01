@@ -45,16 +45,28 @@ npm run lint        # eslint (strictTypeChecked+stylisticTypeChecked) + knip + o
 npm run test        # vitest run (watchless) -- must pass
 npm run build       # tsc -p tsconfig.build.json -> dist/
 npm run check-deps  # deps current with npm latest (needs registry) -- must pass
+npm run wiki-lint   # wiki/'s own links, anchors, and Contents blocks -- not in preflight yet
 npm run preflight   # typecheck + lint + test + check-deps -- ship's step 0
 ```
 
 New tooling gets one of these names or a deliberate, written-down reason not
 to — a `ship` preflight that quietly skips a check is a green light pointing
-at nothing. `check-deps` is the one deliberate sixth name: not a
-compile/lint/test step but a currency audit (`scripts/check-dep-versions.mjs`)
+at nothing. `check-deps` is one deliberate name beyond the compile/lint/test
+core: not a code check but a currency audit (`scripts/check-dep-versions.mjs`)
 that fails when a dep in package.json is declared on a major behind npm's
 current `latest`. Deliberate exceptions live in that script, each with its
 reason. It needs the network, so preflight does too.
+
+`wiki-lint` is the other deliberate name, and deliberately **not** wired
+into `preflight`: it checks `wiki/`'s own browsability mechanics
+(`scripts/check-wiki.mjs` — every relative link resolves, every
+`#fragment` resolves to a real heading, every page's `## Contents` block
+matches its own headings) rather than anything that gates code correctness,
+so a stale wiki page doesn't block shipping code. Run it by hand after
+editing `wiki/`; see `wiki/styleguide.md`. Ported from
+`NireBryce/nixos-configs`' `wiki/scripts/check_wiki.py`, scoped down to the
+three checks that are fully mechanical and need no category/host/route
+table structure this repo doesn't have.
 
 `lint` is `scripts/lint-ratchet.mjs check`, not a bare `eslint .`: it covers
 three categories — ESLint on the strictTypeChecked+stylisticTypeChecked tier
@@ -93,7 +105,10 @@ it's guarding against in its own comment.
   carry a reason in the file. `lint-ratchet.mjs` backs `npm run lint` (see
   Commands) the same way; its baseline lives alongside it in
   `lint-ratchet-baseline.json`, and its oversized-file ignore list follows
-  the same each-entry-carries-a-reason convention.
+  the same each-entry-carries-a-reason convention. `check-wiki.mjs` backs
+  `npm run wiki-lint` (see Commands and `wiki/styleguide.md`); its
+  `gen-contents` subcommand is the fixer for a stale `## Contents` block,
+  not run automatically by `check`.
 
 ## Traps
 
@@ -225,8 +240,13 @@ the current docs rather than recalling them — third-party APIs drift.
   is**: a change that makes it stale corrects it in the same change, not as a
   follow-up. The `docs-sync` skill is the checklist for that.
 - `docs/` — if and when deeper notes exist. Same discipline.
-- `wiki/` — narrative articles (repo history, how-tos), e.g.
-  `wiki/repo-init.md`. Same discipline.
+- `wiki/` — narrative articles (repo history, how-tos). `wiki/README.md`
+  is the topic index — start there rather than guessing a filename; its
+  own house style (naming, the per-page `## Contents` block, linking) is
+  `wiki/styleguide.md`. Same discipline, including keeping that index and
+  each page's "See also" links and `## Contents` block current when a
+  page moves, a heading changes, or a new page lands — `npm run wiki-lint`
+  catches the mechanical half of that.
 
 ## Skills
 

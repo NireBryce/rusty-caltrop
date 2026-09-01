@@ -1,5 +1,13 @@
 # Dependency currency and `check-deps`
 
+## Contents
+
+- [The incident](#the-incident)
+- [The rule](#the-rule)
+- [The judgement calls](#the-judgement-calls)
+- [Future deps](#future-deps)
+- [See also](#see-also)
+
 How this repo keeps `package.json` from rotting, and the incident that
 bought the rule — same day the first manifest was written, 2026-08-31.
 
@@ -54,3 +62,10 @@ does this), and if a deliberate ceiling is ever needed, it goes in
 `ALLOWED_BEHIND_LATEST` with its reason — nowhere else. `npm outdated`
 still exists for within-major bumps; the check is about majors, not
 about pinning every patch.
+
+## See also
+
+- [Wiki index](README.md)
+- [lint-ratchet.md](lint-ratchet.md) — the other preflight check added
+  the same week, same "exception is code, with a reason" convention.
+- [repo-init.md](repo-init.md) — the landing `check-deps` shipped with.
