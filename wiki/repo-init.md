@@ -64,9 +64,13 @@ node --version                        # v24.x
 
 CI needs no setup — it runs on every PR and on pushes to `main`.
 
-## Not done yet
+## Since then
 
-No `package.json`, no source, no npm scripts, no README. The repo is
-deliberately at "scaffolded, waiting for its first source" — AGENTS.md's
-State section tracks exactly this and is updated in the same change
-that changes it.
+The "not done yet" list is history. Still on 2026-08-31, the first real
+landing brought `package.json` (npm, Node 24), the standard script set
+plus `check-deps`, the engine's first source — `src/loop.ts`, the
+fixed-timestep loop — with co-located tests, and a README. See
+[fixed-timestep-loop.md](fixed-timestep-loop.md) for the loop's
+mechanism and [dep-currency.md](dep-currency.md) for why the dependency
+audit exists. AGENTS.md's State section tracks current facts; this
+article stays a record of the init.

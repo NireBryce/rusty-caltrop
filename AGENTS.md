@@ -21,45 +21,58 @@ check `git branch --show-current`.
 
 ## State
 
-Scaffolded, no source yet: commits exist (`main` pushed), and the agent
-scaffolding plus the Nix flake dev shell are landed — but no `package.json`
-and no source. Every claim below with a **FILL IN** marker is a
-fact to establish the moment it exists, not a placeholder to leave in
-place. Update this section in the same change that changes the fact — an
-agent's notes that lag the tree are worse than none.
+Early: the first real module (fixed-timestep loop) is landed with its
+toolchain. Commits exist (`main` pushed). Facts here are updated by the
+change that changes them.
 
-- Package manager: **npm**. Toolchain: **Node 24** (`nodejs_24`), provided by
-  the Nix flake dev shell (`nix develop` or direnv `.envrc`); version pinned
-  by `flake.nix` + `flake.lock`. Record an `engines` field when
-  `package.json` exists.
-- **FILL IN** the script names this repo standardizes on (see Commands).
-- **FILL IN** anything stateful: a deployed environment, a published package
-  name on npm, a database, another repo that vendors this one.
+- Package manager: **npm**, lockfile `package-lock.json`. Toolchain:
+  **Node 24** (`nodejs_24`), provided by the Nix flake dev shell (`nix
+  develop` or direnv `.envrc`); version pinned by `flake.nix` +
+  `flake.lock`, mirrored by the `engines` field in `package.json` and CI.
+- Script names are standardized (see Commands); all are wired up.
+- Nothing stateful yet: the package is `private` and unpublished; no
+  deployed environment, database, or downstream consumer.
 
 ## Commands
 
-**FILL IN** the package manager and lockfile, then standardize on these npm
-script names so every session (and the `ship` skill's step 0, and CI) can run
-them without discovering what they're called this time:
+npm, lockfile `package-lock.json`. Standard names — every session (and the
+`ship` skill's step 0, and CI) can run them without discovering what
+they're called this time:
 
 ```sh
-<pm> run typecheck   # tsc --noEmit (or the framework's equivalent) -- must pass
-<pm> run lint        # eslint (or equivalent) -- must pass
-<pm> run test        # the test runner, in watchless mode -- must pass
-<pm> run build       # produce the artifact, only if this repo ships one
-<pm> run preflight   # typecheck + lint + test in one shot -- ship's step 0
+npm run typecheck   # tsc --noEmit -- must pass
+npm run lint        # eslint -- must pass
+npm run test        # vitest run (watchless) -- must pass
+npm run build       # tsc -p tsconfig.build.json -> dist/
+npm run check-deps  # deps current with npm latest (needs registry) -- must pass
+npm run preflight   # typecheck + lint + test + check-deps -- ship's step 0
 ```
 
-If a script doesn't exist yet because the tooling isn't set up, that is a gap
-to say out loud, not one to route around silently — a `ship` preflight that
-quietly skips typecheck because `tsc` was never wired up is a green light
-pointing at nothing.
+New tooling gets one of these names or a deliberate, written-down reason not
+to — a `ship` preflight that quietly skips a check is a green light pointing
+at nothing. `check-deps` is the one deliberate sixth name: not a
+compile/lint/test step but a currency audit (`scripts/check-dep-versions.mjs`)
+that fails when a dep in package.json is declared on a major behind npm's
+current `latest`. Deliberate exceptions live in that script, each with its
+reason. It needs the network, so preflight does too.
 
 ## Architecture
 
-**FILL IN** once the project has shape: entry points, directory layout, where
-tests live, what the module boundaries are. Until then, assume nothing —
-"look at the imports" beats "assume the layout".
+- `src/` is the whole package; `dist/` is build output (gitignored).
+- `src/loop.ts` — `GameLoop`, the fixed-timestep core (see its module doc
+  for the accumulator mechanism). Environment-agnostic: no timers of its
+  own; callers drive it with `tick(nowMs)` from any scheduler. All times
+  are milliseconds.
+- `src/raf.ts` — the one browser-coupled piece: `startRafLoop` drives a
+  loop from `requestAnimationFrame` + `performance.now()`.
+- `src/index.ts` — public re-exports; import from the package root.
+- Tests are co-located as `src/*.test.ts` (vitest). `typecheck` covers
+  them; `build` excludes them via `tsconfig.build.json`. The vitest
+  `include` glob is pinned in `vitest.config.ts` — see Traps before
+  loosening it.
+- `scripts/` — repo scripts as real files. `check-dep-versions.mjs` backs
+  `npm run check-deps` (see Commands); its deliberate exceptions must each
+  carry a reason in the file.
 
 ## Traps
 
@@ -87,6 +100,25 @@ a "verified" means when reporting it.
 Run the tests, then check the coverage story of *the thing you changed* — a
 passing suite that never executes the new branch is a false positive with a
 checkmark on it.
+
+### Default test globs reach into .direnv (2026-08-31)
+
+The first `npm run test` on the freshly wired vitest executed 26 tests from
+`.direnv/flake-inputs/<hash>-source/` — nix store copies of flake inputs,
+including another repo's test file, which half-ran and then failed the suite
+for having no top-level tests. Mechanism: vitest's default include is
+`**/*.test.ts` and it does not respect `.gitignore`, where `.direnv/` lives.
+`vitest.config.ts` pins `include: ['src/**/*.test.ts']`; if a second test
+root ever appears, that line is the one to move.
+
+### Wrong expected values can hide behind a real bug's red
+
+Same first run as the trap above: four test failures, of which one was a
+harness bug (docstring promised a 20 ms step, harness never set it) and
+three were arithmetic slips in the tests' expected values — the loop was
+right every time. Hand-recompute the accumulator math before suspecting the
+loop; when a fix makes different tests fail, re-derive each expectation from
+the mechanism, not from what would make it pass.
 
 ## Working in this repo
 

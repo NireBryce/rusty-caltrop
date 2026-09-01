@@ -1,9 +1,9 @@
 name: ci
 
-# Mirrors the ship skill's step 0 (preflight: typecheck + lint + test)
-# exactly rather than inventing separate CI-only logic -- what runs here is
-# what any session already runs by hand before opening a PR, just automated
-# instead of relying on that being remembered every time.
+# Mirrors the ship skill's step 0 (preflight: typecheck + lint + test +
+# check-deps) exactly rather than inventing separate CI-only logic -- what
+# runs here is what any session already runs by hand before opening a PR,
+# just automated instead of relying on that being remembered every time.
 #
 # This is the backstop for the local pre-commit hook (.githooks/pre-commit,
 # wired in via `git config core.hooksPath .githooks`) rather than a
@@ -27,7 +27,7 @@ on:
 
 jobs:
   check:
-    name: typecheck + lint + test
+    name: typecheck + lint + test + check-deps
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -73,4 +73,12 @@ jobs:
             npm run test --if-present
           else
             echo "::warning::no 'test' script in package.json -- skipped"
+          fi
+
+      - name: check-deps (if wired up)
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.['check-deps'] ? 0 : 1)" 2>/dev/null; then
+            npm run check-deps
+          else
+            echo "::warning::no 'check-deps' script in package.json -- skipped"
           fi
