@@ -16,9 +16,9 @@ name: ci
 # run that skipped a check says so in the log -- read it, don't just read
 # the checkmark.
 #
-# Assumes npm. If the repo adopts pnpm/yarn/bun (the thing AGENTS.md's
-# State section records as its FILL IN), adjust install + run to match --
-# including the setup action the chosen manager needs.
+# Assumes npm -- settled in AGENTS.md's State section (npm, lockfile
+# package-lock.json), not an open choice. If that ever changes, adjust
+# install + run to match, including the setup action the new manager needs.
 
 on:
   pull_request:
