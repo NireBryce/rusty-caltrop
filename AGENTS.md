@@ -41,7 +41,7 @@ they're called this time:
 
 ```sh
 npm run typecheck   # tsc --noEmit -- must pass
-npm run lint        # eslint -- must pass
+npm run lint        # eslint (strictTypeChecked+stylisticTypeChecked) + knip + oversized-file check, ratcheted -- must pass
 npm run test        # vitest run (watchless) -- must pass
 npm run build       # tsc -p tsconfig.build.json -> dist/
 npm run check-deps  # deps current with npm latest (needs registry) -- must pass
@@ -55,6 +55,24 @@ compile/lint/test step but a currency audit (`scripts/check-dep-versions.mjs`)
 that fails when a dep in package.json is declared on a major behind npm's
 current `latest`. Deliberate exceptions live in that script, each with its
 reason. It needs the network, so preflight does too.
+
+`lint` is `scripts/lint-ratchet.mjs check`, not a bare `eslint .`: it covers
+three categories — ESLint on the strictTypeChecked+stylisticTypeChecked tier
+(not just `recommended`; the stricter tier is what actually catches implicit
+`any`, unsafe casts, and unawaited promises), `knip` (unused exports/files/
+deps), and a same-repo oversized-file line-count check (limit and ignored
+generated files are in the script) — and ratchets each against
+`scripts/lint-ratchet-baseline.json` rather than requiring today's count to
+be zero. A commit that adds a new finding in any category fails; one that
+fixes a finding lowers that category's floor in the baseline file (rewritten
+in place — `git add` it back). `lint-ratchet.mjs show`/`bootstrap` are for
+inspecting current findings or deliberately resetting the floor; `check` is
+what `lint` and CI run. Ported from `NireBryce/nixos-configs`'
+statix+deadnix+oversized-file ratchet (`flake/scripts/lint.py`) — same
+reasoning is in this script's own header. `eslint.config.js`'s explicit
+rules (`switch-exhaustiveness-check`, `no-fallthrough`) are there because
+neither preset includes them, each with the specific silent-failure shape
+it's guarding against in its own comment.
 
 ## Architecture
 
@@ -72,7 +90,10 @@ reason. It needs the network, so preflight does too.
   loosening it.
 - `scripts/` — repo scripts as real files. `check-dep-versions.mjs` backs
   `npm run check-deps` (see Commands); its deliberate exceptions must each
-  carry a reason in the file.
+  carry a reason in the file. `lint-ratchet.mjs` backs `npm run lint` (see
+  Commands) the same way; its baseline lives alongside it in
+  `lint-ratchet-baseline.json`, and its oversized-file ignore list follows
+  the same each-entry-carries-a-reason convention.
 
 ## Traps
 

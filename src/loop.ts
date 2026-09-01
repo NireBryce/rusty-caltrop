@@ -50,10 +50,15 @@ export class GameLoop {
     const maxFrameMs = options.maxFrameMs ?? DEFAULT_MAX_FRAME_MS;
     // `!(x > 0)` also catches NaN, which a plain `x <= 0` check would pass.
     if (!(stepMs > 0) || !Number.isFinite(stepMs)) {
-      throw new RangeError(`stepMs must be a positive finite number, got ${options.stepMs}`);
+      // Interpolates `stepMs` (post-`??`), not `options.stepMs`: this branch
+      // only runs when options.stepMs was explicitly set (an omitted one
+      // becomes the always-valid default), so the two are equal here -- but
+      // `stepMs` is narrowed to `number`, where `options.stepMs` is
+      // `number | undefined` and trips restrict-template-expressions.
+      throw new RangeError(`stepMs must be a positive finite number, got ${stepMs}`);
     }
     if (!(maxFrameMs > 0) || !Number.isFinite(maxFrameMs)) {
-      throw new RangeError(`maxFrameMs must be a positive finite number, got ${options.maxFrameMs}`);
+      throw new RangeError(`maxFrameMs must be a positive finite number, got ${maxFrameMs}`);
     }
     this.stepMs = stepMs;
     this.maxFrameMs = maxFrameMs;
